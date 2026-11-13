@@ -1,0 +1,13 @@
+Inestabilidad de Martin I = Ce/(Ca+Ce), contando paquetes del proyecto (se excluyen java.* y Spring),
+a partir de las aristas internas de `jdeps -verbose:package target/classes`.
+
+ANTES (commit 6, jdeps-antes.txt)
+  inventario -> reportes
+  reportes   -> inventario
+  inventario: Ca=1 (reportes), Ce=1 (reportes)   I = 1/(1+1) = 0.5
+  reportes:   Ca=1 (inventario), Ce=1 (inventario) I = 1/(1+1) = 0.5
+
+DESPUES (commit 9, jdeps-despues.txt)
+  reportes   -> inventario   (ReporteBajoStockService -> NotificadorBajoStock, Producto)
+  inventario: Ca=1 (reportes), Ce=0                I = 0/(1+0) = 0
+  reportes:   Ca=0,            Ce=1 (inventario)   I = 1/(0+1) = 1

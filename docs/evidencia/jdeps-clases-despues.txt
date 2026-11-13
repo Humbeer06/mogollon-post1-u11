@@ -1,0 +1,2 @@
+   com.universidad.refactoringu11.reportes.ReporteBajoStockService -> com.universidad.refactoringu11.inventario.NotificadorBajoStock classes
+   com.universidad.refactoringu11.reportes.ReporteBajoStockService -> com.universidad.refactoringu11.inventario.Producto classes

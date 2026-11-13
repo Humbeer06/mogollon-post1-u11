@@ -1,0 +1,15 @@
+   com.universidad.refactoringu11                     -> java.lang                                          java.base
+   com.universidad.refactoringu11                     -> org.springframework.boot                           not found
+   com.universidad.refactoringu11                     -> org.springframework.boot.autoconfigure             not found
+   com.universidad.refactoringu11                     -> org.springframework.context                        not found
+   com.universidad.refactoringu11.inventario          -> java.io                                            java.base
+   com.universidad.refactoringu11.inventario          -> java.lang                                          java.base
+   com.universidad.refactoringu11.inventario          -> java.lang.invoke                                   java.base
+   com.universidad.refactoringu11.inventario          -> java.util                                          java.base
+   com.universidad.refactoringu11.inventario          -> org.springframework.beans.factory.annotation       not found
+   com.universidad.refactoringu11.inventario          -> org.springframework.stereotype                     not found
+   com.universidad.refactoringu11.reportes            -> com.universidad.refactoringu11.inventario          classes
+   com.universidad.refactoringu11.reportes            -> java.lang                                          java.base
+   com.universidad.refactoringu11.reportes            -> java.lang.invoke                                   java.base
+   com.universidad.refactoringu11.reportes            -> java.util                                          java.base
+   com.universidad.refactoringu11.reportes            -> org.springframework.stereotype                     not found

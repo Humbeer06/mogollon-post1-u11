@@ -154,7 +154,14 @@ flowchart LR
     reportes -->|"ReporteBajoStockService implements NotificadorBajoStock; usa Producto"| inventario
 ```
 
-**Justificación:** `inventario` es el paquete de mayor nivel de abstracción: contiene el dominio (productos, movimientos, política de reorden). `reportes` es un consumidor que presenta información derivada, más cercano a infraestructura. La regla es «dominio nunca depende de infraestructura»: si la interfaz viviera en `reportes`, `InventarioService` seguiría importando ese paquete y el ciclo persistiría. Al ubicar el puerto en `inventario`, es el dominio quien define qué necesita saber del exterior y los detalles (reportes, correo, mensajería) se acoplan a él. Estabilidad (Martin, I = Ce/(Ca+Ce)): {{INESTABILIDAD}}
+**Justificación:** `inventario` es el paquete de mayor nivel de abstracción: contiene el dominio (productos, movimientos, política de reorden). `reportes` es un consumidor que presenta información derivada, más cercano a infraestructura. La regla es «dominio nunca depende de infraestructura»: si la interfaz viviera en `reportes`, `InventarioService` seguiría importando ese paquete y el ciclo persistiría. Al ubicar el puerto en `inventario`, es el dominio quien define qué necesita saber del exterior y los detalles (reportes, correo, mensajería) se acoplan a él. Estabilidad (Martin, I = Ce/(Ca+Ce)): contando paquetes del proyecto con las aristas internas de `jdeps` (sin `java.*` ni Spring; `docs/evidencia/instabilidad.txt`):
+
+| Paquete | Antes (Ca / Ce / I) | Después (Ca / Ce / I) |
+|---|---|---|
+| `inventario` | 1 / 1 / 1/(1+1) = 0.5 | 1 / 0 / 0/(1+0) = **0** |
+| `reportes` | 1 / 1 / 1/(1+1) = 0.5 | 0 / 1 / 1/(0+1) = **1** |
+
+Después, la única arista interna que reporta `jdeps -verbose:package` es `reportes -> inventario` (a nivel de clase: `ReporteBajoStockService -> NotificadorBajoStock` y `ReporteBajoStockService -> Producto`); `inventario` no tiene ninguna dependencia hacia `reportes` (Ce = 0). El paquete estable (I = 0) es el dominio y el inestable (I = 1) es el consumidor, como pide el principio de dependencias estables.
 
 ### 2.3 Decisión de diseño 4 — granularidad de `notificar`
 
@@ -165,23 +172,37 @@ flowchart LR
 `ArquitecturaPaquetesTest` en verde:
 
 ```
-{{SALIDA_ARCHUNIT_VERDE}}
+[INFO] Running com.universidad.refactoringu11.ArquitecturaPaquetesTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.345 s -- in com.universidad.refactoringu11.ArquitecturaPaquetesTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
 ```
 
-Suite completa sin modificar las pruebas de la Parte 1 (`InventarioServiceTest`, `ClasificadorProductoTest`, `EtiquetadoProductoTest`: `git diff --stat {{HASH_C2}} HEAD -- <esos tres archivos>` vacío):
+Suite completa sin modificar las pruebas de la Parte 1 (`InventarioServiceTest`, `ClasificadorProductoTest`, `EtiquetadoProductoTest`: `git diff --stat 223dd39 HEAD -- <esos tres archivos>` vacío):
 
 ```
-{{SALIDA_MVN_FINAL}}
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.367 s -- in com.universidad.refactoringu11.ArquitecturaPaquetesTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.039 s -- in com.universidad.refactoringu11.inventario.ClasificadorProductoTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 s -- in com.universidad.refactoringu11.inventario.EtiquetadoProductoTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 s -- in com.universidad.refactoringu11.inventario.InventarioServiceNotificacionTest
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.050 s -- in com.universidad.refactoringu11.inventario.InventarioServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.090 s -- in com.universidad.refactoringu11.RefactoringU11ApplicationTests
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.universidad.refactoringu11.reportes.ReporteBajoStockServiceTest
+[INFO] Tests run: 36, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
 ```
 
-Pruebas nuevas (commit 9): `InventarioServiceNotificacionTest` (la notificación llega al puerto con el producto y la cantidad correctos y no se invoca sin bajo stock ni con errores), `ReporteBajoStockServiceTest` (reporte vacío, con alertas) y `RefactoringU11ApplicationTests` (el contexto de Spring arranca y la alerta llega al reporte a través del puerto).
+Pruebas nuevas (commit 9): `InventarioServiceNotificacionTest` (la notificación llega al puerto con el producto y la cantidad correctos y no se invoca sin bajo stock ni con errores), `ReporteBajoStockServiceTest` (reporte vacío, con una alerta y con varias en orden de llegada) y `RefactoringU11ApplicationTests` (el contexto de Spring arranca y la alerta llega al reporte a través del puerto).
 
 ## Ajustes respecto a la guía
 
 - `ReporteBajoStockService` ya no guarda el campo `InventarioService` de la guía: tras invertir la dependencia no lo usa y el wiring por constructor mantenía acoplado el ciclo de beans en Spring. Registra sus propias alertas.
 - Pruebas de caracterización ampliadas (ver 1.2).
 - Se añadieron JaCoCo y PMD (CPD) al `pom.xml` para medir; ArchUnit se añadió en el commit 6.
-- {{AJUSTES_EXTRA}}
+- Ejecución con JDK 22.0.2 (el `pom.xml` compila para Java 17 vía `java.version`); no fue necesario cambiar código del material.
+- Número de pruebas real: 26 de negocio en los commits 2–7 (en el commit 7 la de ArchUnit falla a propósito), 27 tras el commit 8 (26 + `ArquitecturaPaquetesTest`) y **36** tras el commit 9 (26 + 1 de arquitectura + 4 de notificación + 3 de reporte + 2 de contexto). La guía estimaba 35 porque no contaba la prueba de ArchUnit.
+- CPD (`mvn pmd:cpd`, PMD 7.7.0, `minimumTokens`=40) se ejecutó y reportó 0 duplicados tanto antes como después (`docs/evidencia/cpd-antes.xml`, `cpd-despues.xml`): con esa configuración CPD no detecta la duplicación estructural de los dos `switch`, que sí evidencian el `grep` y la lectura del código. No se cambió la configuración para forzar un resultado.
+- En 1.1 la plantilla decía «cinco responsabilidades»; el código del commit 1 muestra seis, y se corrigió el texto.
 
 ## Cómo ejecutar
 
