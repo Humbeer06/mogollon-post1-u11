@@ -1,0 +1,11 @@
+src/main/java/com/universidad/refactoringu11/inventario/ClasificadorProducto.java:7:        switch (producto.getTipo()) {
+src/main/java/com/universidad/refactoringu11/inventario/ClasificadorProducto.java:8:            case LIBRO:       return 0.0;
+src/main/java/com/universidad/refactoringu11/inventario/ClasificadorProducto.java:9:            case ELECTRONICO: return producto.getPrecio() * 0.08;
+src/main/java/com/universidad/refactoringu11/inventario/ClasificadorProducto.java:10:            case ROPA:        return producto.getPrecio() * 0.03;
+src/main/java/com/universidad/refactoringu11/inventario/ClasificadorProducto.java:11:            case ALIMENTO:    return 2.50;
+src/main/java/com/universidad/refactoringu11/inventario/EtiquetadoProducto.java:5:    // Mismo switch sobre TipoProducto que ClasificadorProducto — duplicacion estructural
+src/main/java/com/universidad/refactoringu11/inventario/EtiquetadoProducto.java:7:        switch (producto.getTipo()) {
+src/main/java/com/universidad/refactoringu11/inventario/EtiquetadoProducto.java:8:            case LIBRO:       return "[LIBRO] " + producto.getNombre() + " - Exento de IVA";
+src/main/java/com/universidad/refactoringu11/inventario/EtiquetadoProducto.java:9:            case ELECTRONICO: return "[ELECTRO] " + producto.getNombre() + " - Garantia 1 ano";
+src/main/java/com/universidad/refactoringu11/inventario/EtiquetadoProducto.java:10:            case ROPA:        return "[ROPA] " + producto.getNombre() + " - Ver talla";
+src/main/java/com/universidad/refactoringu11/inventario/EtiquetadoProducto.java:11:            case ALIMENTO:    return "[ALIMENTO] " + producto.getNombre() + " - Perecedero";

@@ -1,0 +1,13 @@
+<init>                              CC=1  (linea 8)
+agregarProducto                     CC=1  (linea 18)
+actualizarInventario                CC=5  (linea 22)
+sonDatosValidos                     CC=5  (linea 32)
+buscarProducto                      CC=3  (linea 37)
+esSalidaSinStockSuficiente          CC=3  (linea 44)
+aplicarMovimiento                   CC=2  (linea 48)
+necesitaReorden                     CC=2  (linea 55)
+calcularCantidadReorden             CC=1  (linea 59)
+registrarMovimiento                 CC=1  (linea 63)
+alertarReorden                      CC=1  (linea 70)
+TOTAL clase                         CC=25
+RAMAS: 28 de 28 cubiertas (100.0 %)

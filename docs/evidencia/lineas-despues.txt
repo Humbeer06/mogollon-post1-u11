@@ -1,0 +1,1 @@
+actualizarInventario: lineas totales (firma a llave final) = 9; cuerpo no vacio sin comentarios = 7

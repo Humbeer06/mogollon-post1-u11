@@ -1,0 +1,5 @@
+<init>                              CC=1  (linea 8)
+agregarProducto                     CC=1  (linea 14)
+actualizarInventario                CC=13  (linea 22)
+TOTAL clase                         CC=15
+RAMAS: 24 de 24 cubiertas (100.0 %)

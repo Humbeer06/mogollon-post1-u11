@@ -1,0 +1,6 @@
+INSTRUCTION  247/271 cubiertos (91.1 %)
+BRANCH       32/34 cubiertos (94.1 %)
+LINE         57/64 cubiertos (89.1 %)
+COMPLEXITY   34/38 cubiertos (89.5 %)
+METHOD       16/18 cubiertos (88.9 %)
+CLASS        5/6 cubiertos (83.3 %)
