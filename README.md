@@ -110,8 +110,8 @@ Antes (con ciclo):
 
 ```mermaid
 flowchart LR
-    inventario -->|"InventarioService importa ReporteBajoStockService"| reportes
-    reportes -->|"ReporteBajoStockService importa InventarioService"| inventario
+    inventario -->|"importa reportes"| reportes
+    reportes -->|"importa inventario"| inventario
 ```
 
 El proyecto compila y las pruebas de negocio siguen en verde (`mvn clean test` tras el commit 6: `Tests run: 26, Failures: 0, Errors: 0, Skipped: 0` — BUILD SUCCESS; y con `ArquitecturaPaquetesTest` ya presente, `mvn test -Dtest='InventarioServiceTest,ClasificadorProductoTest,EtiquetadoProductoTest'` también da 26/26 en verde): el problema es de arquitectura, no de comportamiento. La prueba `ArquitecturaPaquetesTest` (`slices().matching("com.universidad.refactoringu11.(*)..").should().beFreeOfCycles()`) falla y reporta el ciclo (commit 7, en rojo):
@@ -151,7 +151,7 @@ Después (sin ciclo):
 
 ```mermaid
 flowchart LR
-    reportes -->|"ReporteBajoStockService implements NotificadorBajoStock; usa Producto"| inventario
+    reportes -->|"depende de"| inventario
 ```
 
 **Justificación:** `inventario` es el paquete de mayor nivel de abstracción: contiene el dominio (productos, movimientos, política de reorden). `reportes` es un consumidor que presenta información derivada, más cercano a infraestructura. La regla es «dominio nunca depende de infraestructura»: si la interfaz viviera en `reportes`, `InventarioService` seguiría importando ese paquete y el ciclo persistiría. Al ubicar el puerto en `inventario`, es el dominio quien define qué necesita saber del exterior y los detalles (reportes, correo, mensajería) se acoplan a él. Estabilidad (Martin, I = Ce/(Ca+Ce)): contando paquetes del proyecto con las aristas internas de `jdeps` (sin `java.*` ni Spring; `docs/evidencia/instabilidad.txt`):
