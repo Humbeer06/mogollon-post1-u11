@@ -114,13 +114,34 @@ flowchart LR
     reportes -->|"ReporteBajoStockService importa InventarioService"| inventario
 ```
 
-El proyecto compila y las pruebas de negocio siguen en verde ({{SALIDA_MVN_C6}}): el problema es de arquitectura, no de comportamiento. La prueba `ArquitecturaPaquetesTest` (`slices().matching("com.universidad.refactoringu11.(*)..").should().beFreeOfCycles()`) falla y reporta el ciclo (commit 7, en rojo):
+El proyecto compila y las pruebas de negocio siguen en verde (`mvn clean test` tras el commit 6: `Tests run: 26, Failures: 0, Errors: 0, Skipped: 0` — BUILD SUCCESS; y con `ArquitecturaPaquetesTest` ya presente, `mvn test -Dtest='InventarioServiceTest,ClasificadorProductoTest,EtiquetadoProductoTest'` también da 26/26 en verde): el problema es de arquitectura, no de comportamiento. La prueba `ArquitecturaPaquetesTest` (`slices().matching("com.universidad.refactoringu11.(*)..").should().beFreeOfCycles()`) falla y reporta el ciclo (commit 7, en rojo):
 
 ```
-{{SALIDA_ARCHUNIT_ROJO}}
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 3.075 s <<< FAILURE! -- in com.universidad.refactoringu11.ArquitecturaPaquetesTest
+[ERROR] com.universidad.refactoringu11.ArquitecturaPaquetesTest.losPaquetesNoDebenTenerDependenciasCiclicas -- Time elapsed: 2.997 s <<< FAILURE!
+java.lang.AssertionError: 
+Architecture Violation [Priority: MEDIUM] - Rule 'slices matching 'com.universidad.refactoringu11.(*)..' should be free of cycles' was violated (1 times):
+Cycle detected: Slice inventario -> 
+                Slice reportes -> 
+                Slice inventario
+  1. Dependencies of Slice inventario
+    - Field <com.universidad.refactoringu11.inventario.InventarioService.reporteBajoStockService> has type <com.universidad.refactoringu11.reportes.ReporteBajoStockService> in (InventarioService.java:0)
+    - Method <com.universidad.refactoringu11.inventario.InventarioService.setReporteBajoStockService(com.universidad.refactoringu11.reportes.ReporteBajoStockService)> has parameter of type <com.universidad.refactoringu11.reportes.ReporteBajoStockService> in (InventarioService.java:0)
+    - Method <com.universidad.refactoringu11.inventario.InventarioService.alertarReorden(com.universidad.refactoringu11.inventario.Producto)> calls method <com.universidad.refactoringu11.reportes.ReporteBajoStockService.generarReporte()> in (InventarioService.java:81)
+  2. Dependencies of Slice reportes
+    - Constructor <com.universidad.refactoringu11.reportes.ReporteBajoStockService.<init>(com.universidad.refactoringu11.inventario.InventarioService)> has parameter of type <com.universidad.refactoringu11.inventario.InventarioService> in (ReporteBajoStockService.java:0)
+    - Field <com.universidad.refactoringu11.reportes.ReporteBajoStockService.inventarioService> has type <com.universidad.refactoringu11.inventario.InventarioService> in (ReporteBajoStockService.java:0)
+	...
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO] BUILD FAILURE
 ```
 
-Evidencia complementaria con `jdeps -verbose:package target/classes`: {{JDEPS_ANTES}}
+Evidencia complementaria con `jdeps -verbose:package target/classes`: las dos aristas internas forman el ciclo (`docs/evidencia/jdeps-antes.txt`):
+
+```
+   com.universidad.refactoringu11.inventario          -> com.universidad.refactoringu11.reportes            classes
+   com.universidad.refactoringu11.reportes            -> com.universidad.refactoringu11.inventario          classes
+```
 
 > Nota técnica: con el ciclo, un `@SpringBootTest` no levanta el contexto (Spring Boot ≥ 2.6 prohíbe referencias circulares entre beans). Por eso la prueba de contexto se agregó solo después de invertir la dependencia (commit 9).
 
